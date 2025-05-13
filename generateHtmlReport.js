@@ -1,80 +1,79 @@
 const fs = require('fs');
 const path = require('path');
 
-// Paths
-const reportsDir = './reports';
-const screenshotsDir = './screenshots';
-const csvPath = path.join(reportsDir, 'performance-metrics.csv');
-const outputHtmlPath = path.join(reportsDir, 'report.html');
+const csvPath = path.join(__dirname, 'reports', 'performance-metrics.csv');
+const htmlPath = path.join(__dirname, 'reports', 'performance-report.html');
 
-// Read CSV
-const csvData = fs.readFileSync(csvPath, 'utf-8');
-const rows = csvData.trim().split('\n').slice(1); // Remove header
+const csv = fs.readFileSync(csvPath, 'utf-8').trim();
+const lines = csv.split('\n');
+const headers = lines[0].split(',');
+const rows = lines.slice(1).map(line => line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/));
 
-let summaryTable = `
-  <h2>Summary</h2>
-  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
-    <tr style="background-color: #333; color: #fff;">
-      <th>Page</th>
-      <th>URL</th>
-      <th>Load Time (ms)</th>
-    </tr>
-`;
-
-let detailedReports = '';
-
-// Generate table rows and screenshot sections
-for (const row of rows) {
-  const [title, url, loadTime, resources] = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, ''));
-
-  summaryTable += `
-    <tr>
-      <td>${title}</td>
-      <td><a href="${url}" target="_blank">${url}</a></td>
-      <td>${loadTime}</td>
-    </tr>
-  `;
-
-  // Format top resources as numbered list
-  const topResources = resources.split('; ').map((r, i) => `<li>${r}</li>`).join('');
-
-  // Match screenshot filename format
-  const screenshotFile = `${title.toLowerCase().replace(/ /g, '-')}.png`;
-  const screenshotPath = path.join(screenshotsDir, screenshotFile);
-  const screenshotExists = fs.existsSync(screenshotPath);
-
-  detailedReports += `
-    <h3>${title}</h3>
-    <p><strong>URL:</strong> <a href="${url}" target="_blank">${url}</a></p>
-    <p><strong>Load Time:</strong> ${loadTime} ms</p>
-    <p><strong>Top 5 Slowest Resources:</strong></p>
-    <ol>${topResources}</ol>
-    ${screenshotExists ? `<img src="../screenshots/${screenshotFile}" alt="${title} Screenshot" style="max-width: 100%; border: 1px solid #ccc;" />` : '<p><em>No screenshot available</em></p>'}
-    <hr />
-  `;
-}
-
-summaryTable += '</table>';
-
-// Full HTML
-const htmlContent = `
+const html = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Site Audit Report</title>
+  <title>Performance Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; }
+    h1 {
+      color: #0057a0;
+      border-bottom: 2px solid #0057a0;
+      padding-bottom: 10px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      background-color: #fff;
+    }
+    th {
+      background-color: #444;
+      color: #fff;
+      padding: 12px;
+      text-align: left;
+    }
+    td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      vertical-align: top;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    ol { margin: 0; padding-left: 20px; }
+    li { margin-bottom: 4px; }
+    a { color: #0073e6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
 </head>
-<body style="font-family: Arial, sans-serif; margin: 40px;">
-  <h1 style="color: #003366;">📊 Site Performance Summary Report</h1>
-  ${summaryTable}
-  <br />
-  <h2>Details</h2>
-  ${detailedReports}
+<body>
+  <h1>Forbes AU Site Performance Report</h1>
+  <table>
+    <thead>
+      <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+    </thead>
+    <tbody>
+      ${rows.map(row => {
+        const topResourcesRaw = row[3].replace(/^"|"$/g, '');
+        const topResourcesList = topResourcesRaw
+          .split('; ')
+          .map(item => `<li>${item}</li>`)
+          .join('');
+        return `
+        <tr>
+          <td>${row[0]}</td>
+          <td><a href="${row[1]}" target="_blank">${row[1]}</a></td>
+          <td>${row[2]}</td>
+          <td><ol>${topResourcesList}</ol></td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>
 </body>
 </html>
 `;
 
-// Write to HTML file
-fs.writeFileSync(outputHtmlPath, htmlContent, 'utf-8');
-
-console.log(`✅ HTML report generated at ${outputHtmlPath}`);
+fs.writeFileSync(htmlPath, html, 'utf-8');
+console.log(`✅ HTML report generated at ${htmlPath}`);
