@@ -1,0 +1,89 @@
+name: Playwright Site Status
+
+on:
+  schedule:
+    - cron: "0 0 * * FRI"
+  workflow_dispatch:
+
+jobs:
+  site-check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        site: [AU, CA]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies and Chromium only
+        run: |
+          npm install
+          npx playwright install chromium
+
+      - name: Run Playwright tests for ${{ matrix.site }}
+        run: |
+          SITE=${{ matrix.site }}
+          mkdir -p reports/$SITE
+
+          TEST_FILE="sites/${SITE}.spec.ts"
+
+          echo "Running test file: $TEST_FILE"
+
+          if npx playwright test "$TEST_FILE" --reporter=html --output=reports/$SITE; then
+            echo "${SITE} ✅ Site check passed" > reports/$SITE/combined-status.txt
+          else
+            echo "${SITE} ❌ Site check failed" > reports/$SITE/combined-status.txt
+          fi
+
+      - name: Upload site report
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-${{ matrix.site }}
+          path: |
+            screenshots/
+            reports/performance-metrics.csv
+
+      - name: Upload site status
+        uses: actions/upload-artifact@v4
+        with:
+          name: status-${{ matrix.site }}
+          path: reports/${{ matrix.site }}/combined-status.txt
+
+  notify:
+    needs: site-check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download only status artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: status-reports
+
+      - name: Merge unique site statuses
+        run: |
+          echo ":bell: *Site Status Check Summary*" > final-status.txt
+          
+          for dir in status-reports/status-*; do
+            cat "$dir/combined-status.txt" >> final-status.txt
+          done
+          
+          echo ":link: *View Run:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> final-status.txt
+          cat final-status.txt
+
+      - name: Send Slack Notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          TEXT=$(cat final-status.txt)
+          PAYLOAD=$(jq -n --arg text "$TEXT" '{text: $text}')
+          echo "$PAYLOAD" > slack-payload.json
+
+          curl -X POST -H 'Content-type: application/json' \
+            --data @slack-payload.json \
+            $SLACK_WEBHOOK_URL
