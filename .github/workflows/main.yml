@@ -67,23 +67,11 @@ jobs:
 
       - name: Merge unique site statuses
         run: |
-          echo ":bell: *Site Status Check Summary*" > final-status.txt
+          echo "Site Status Check Summary" > final-status.txt
           
           for dir in status-reports/status-*; do
             cat "$dir/combined-status.txt" >> final-status.txt
           done
           
-          echo ":link: *View Run:* https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> final-status.txt
+          echo "View Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> final-status.txt
           cat final-status.txt
-
-      - name: Send Slack Notification
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: |
-          TEXT=$(cat final-status.txt)
-          PAYLOAD=$(jq -n --arg text "$TEXT" '{text: $text}')
-          echo "$PAYLOAD" > slack-payload.json
-
-          curl -X POST -H 'Content-type: application/json' \
-            --data @slack-payload.json \
-            $SLACK_WEBHOOK_URL
