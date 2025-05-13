@@ -1,99 +1,99 @@
 const fs = require('fs');
 const path = require('path');
-const open = require('open');
 
 const csvPath = path.join(__dirname, 'reports', 'performance-metrics.csv');
 const screenshotsDir = path.join(__dirname, 'screenshots');
-const htmlPath = path.join(__dirname, 'reports', 'performance-report.html');
+const htmlPath = path.join(__dirname, 'reports', 'report.html');
 
-const csv = fs.readFileSync(csvPath, 'utf-8').trim();
-const lines = csv.split('\n');
-const headers = lines[0].split(',');
-const rows = lines.slice(1).map(line => line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/));
+function parseCSV(csvFilePath) {
+  const lines = fs.readFileSync(csvFilePath, 'utf-8').trim().split('\n');
+  const [header, ...rows] = lines;
+  return rows.map(row => {
+    const [page, url, loadTime, topResources] = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(field =>
+      field.replace(/^"|"$/g, '')
+    );
 
-const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Performance Report</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; }
-    h1 {
-      color: #0057a0;
-      border-bottom: 2px solid #0057a0;
-      padding-bottom: 10px;
-    }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 20px;
-      background-color: #fff;
-    }
-    th {
-      background-color: #444;
-      color: #fff;
-      padding: 12px;
-      text-align: left;
-    }
-    td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      vertical-align: top;
-    }
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
-    ol { margin: 0; padding-left: 20px; }
-    li { margin-bottom: 4px; }
-    a { color: #0073e6; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    img {
-      max-width: 100%;
-      margin-top: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    .screenshot-container {
-      margin-top: 10px;
-    }
-  </style>
-</head>
-<body>
-  <h1>Forbes AU Site Performance Report</h1>
-  <table>
-    <thead>
-      <tr>${headers.map(h => `<th>${h}</th>`).join('')}<th>Screenshot</th></tr>
-    </thead>
-    <tbody>
-      ${rows.map(row => {
-        const title = row[0].toLowerCase().replace(/ /g, '-');
-        const screenshotFile = path.join(screenshotsDir, `${title}.png`);
-        const imgTag = fs.existsSync(screenshotFile)
-          ? `<div class="screenshot-container"><img src="../screenshots/${title}.png" alt="${row[0]} screenshot" /></div>`
-          : '<div style="color: red;">⚠️ No screenshot found</div>';
+    const resources = topResources.split(';').map(item => item.trim()).filter(Boolean);
+    return { page, url, loadTime, resources };
+  });
+}
 
-        const topResourcesRaw = row[3].replace(/^"|"$/g, '');
-        const topResourcesList = topResourcesRaw
-          .split('; ')
-          .map(item => `<li>${item}</li>`)
-          .join('');
+function generateHTMLReport(data) {
+  return `
+    <html>
+      <head>
+        <title>Performance Report</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+          }
+          h1 {
+            color: #333;
+          }
+          h2 {
+            margin-top: 40px;
+            color: #444;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+          }
+          th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+          }
+          th {
+            background-color: #f0f0f0;
+            color: #333;
+          }
+          img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+          }
+          ol {
+            margin: 10px 0 10px 20px;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Forbes AU Site Audit Report</h1>
+        ${data
+          .map(item => {
+            const screenshotName = `${item.page.toLowerCase().replace(/ /g, '-')}.png`;
+            const screenshotPath = path.join('screenshots', screenshotName);
 
-        return `
-        <tr>
-          <td>${row[0]}</td>
-          <td><a href="${row[1]}" target="_blank">${row[1]}</a></td>
-          <td>${row[2]}</td>
-          <td><ol>${topResourcesList}</ol></td>
-          <td>${imgTag}</td>
-        </tr>`;
-      }).join('')}
-    </tbody>
-  </table>
-</body>
-</html>
-`;
+            const numberedResources = item.resources.map((res, index) => `<li>${res}</li>`).join('');
 
+            return `
+              <h2>${item.page}</h2>
+              <table>
+                <tr><th>URL</th><td><a href="${item.url}" target="_blank">${item.url}</a></td></tr>
+                <tr><th>Load Time (ms)</th><td>${item.loadTime}</td></tr>
+                <tr><th>Top 5 Slowest Resources</th><td><ol>${numberedResources}</ol></td></tr>
+              </table>
+              <div>
+                <strong>Screenshot:</strong><br>
+                <img src="../screenshots/${screenshotName}" alt="${item.page} Screenshot" />
+              </div>
+            `;
+          })
+          .join('')}
+      </body>
+    </html>
+  `;
+}
+
+// Generate report
+const data = parseCSV(csvPath);
+const html = generateHTMLReport(data);
 fs.writeFileSync(htmlPath, html, 'utf-8');
 console.log(`✅ HTML report with screenshots saved at ${htmlPath}`);
-open(htmlPath);
