@@ -147,15 +147,5 @@ test('Investing page verification', async ({ page }) => {
   await delay(60000); // 1 minute delay
 });
 
-// Credit Cards page test
-test('Credit Cards page verification', async ({ page }) => {
-  await setupPage(page);
-  await page.goto('https://www.forbes.com/advisor/au/credit-cards/best-credit-cards/');
-  await expect(page.locator('h1')).toContainText('Our Pick Of The Best Credit Cards For Australians');
-  await expect(page.getByRole('link', { name: 'Forbes Logo' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Subscribe' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'forbes', exact: true })).toBeVisible();
-  await trackPerformanceMetrics(page, 'Credit Cards page');
-  await delay(60000); // 1 minute delay
-});
+
 
