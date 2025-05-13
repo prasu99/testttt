@@ -54,24 +54,3 @@ jobs:
         with:
           name: status-${{ matrix.site }}
           path: reports/${{ matrix.site }}/combined-status.txt
-
-  notify:
-    needs: site-check
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download only status artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: status-reports
-
-      - name: Merge unique site statuses
-        run: |
-          echo "Site Status Check Summary" > final-status.txt
-          
-          for dir in status-reports/status-*; do
-            cat "$dir/combined-status.txt" >> final-status.txt
-          done
-          
-          echo "View Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> final-status.txt
-          cat final-status.txt
