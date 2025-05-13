@@ -1,4 +1,3 @@
-// generateHtmlReport.js
 const fs = require('fs');
 const path = require('path');
 
@@ -17,12 +16,36 @@ const html = `
   <meta charset="UTF-8">
   <title>Performance Report</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; vertical-align: top; }
-    th { background-color: #f4f4f4; }
-    td pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
-    h1 { color: #333; }
+    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; }
+    h1 {
+      color: #0057a0;
+      border-bottom: 2px solid #0057a0;
+      padding-bottom: 10px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      background-color: #fff;
+    }
+    th {
+      background-color: #444;
+      color: #fff;
+      padding: 12px;
+      text-align: left;
+    }
+    td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      vertical-align: top;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    ol { margin: 0; padding-left: 20px; }
+    li { margin-bottom: 4px; }
+    a { color: #0073e6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -32,11 +55,20 @@ const html = `
       <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
     </thead>
     <tbody>
-      ${rows.map(row => `
+      ${rows.map(row => {
+        const topResourcesRaw = row[3].replace(/^"|"$/g, '');
+        const topResourcesList = topResourcesRaw
+          .split('; ')
+          .map(item => `<li>${item}</li>`)
+          .join('');
+        return `
         <tr>
-          ${row.map(cell => `<td><pre>${cell.replace(/^"|"$/g, '')}</pre></td>`).join('')}
-        </tr>
-      `).join('')}
+          <td>${row[0]}</td>
+          <td><a href="${row[1]}" target="_blank">${row[1]}</a></td>
+          <td>${row[2]}</td>
+          <td><ol>${topResourcesList}</ol></td>
+        </tr>`;
+      }).join('')}
     </tbody>
   </table>
 </body>
