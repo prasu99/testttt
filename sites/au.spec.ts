@@ -22,16 +22,6 @@ const pages = [
     url: 'https://www.forbes.com/advisor/au/investing/',
     h1: 'Investing in Australia'
   },
-  {
-    title: 'Credit Cards',
-    url: 'https://www.forbes.com/advisor/au/credit-cards/best-credit-cards/',
-    h1: 'Best Credit Cards Australia'
-  },
-  {
-    title: 'Loans',
-    url: 'https://www.forbes.com/advisor/au/personal-loans/best-personal-loans/',
-    h1: 'Best Personal Loans Australia'
-  }
 ];
 
 async function delay(ms: number) {
