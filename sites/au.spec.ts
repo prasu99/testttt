@@ -1,148 +1,87 @@
-import { test, expect, Page } from '@playwright/test';
+import { test } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 
+test.setTimeout(360000); // 6 minutes
 
-// Ensure screenshots directory exists
 const screenshotsDir = './screenshots';
-if (!fs.existsSync(screenshotsDir)) {
-  fs.mkdirSync(screenshotsDir);
-}
+const reportsDir = './reports';
+const performanceCsvPath = path.join(reportsDir, 'performance-metrics.csv');
 
+if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
+if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir);
 
-// Set test timeout to 60 seconds
-test.setTimeout(180000);
+const pages = [
+  {
+    title: 'Home',
+    url: 'https://www.forbes.com/advisor/au/',
+    h1: 'Smart Financial Decisions Made Simple'
+  },
+  {
+    title: 'Investing',
+    url: 'https://www.forbes.com/advisor/au/investing/',
+    h1: 'Investing in Australia'
+  },
+];
 
-
-// Helper functions
-async function setupPage(page: Page) {
-  await page.setViewportSize({ width: 1280, height: 720 });
-  page.on('pageerror', error => console.error('[RUNTIME ERROR]', error));
-}
-
-// Add delay function
 async function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function capturePerformanceMetrics(page: Page, pageUrl: string) {
-  const performanceEntries = await page.evaluate(() => {
-    return performance.getEntriesByType('resource')
-      .map(entry => ({
-        name: entry.name,
-        duration: Number(entry.duration.toFixed(1)),
-        initiatorType: (entry as PerformanceResourceTiming).initiatorType || 'unknown'
-      }))
-      .filter(entry => {
-        try {
-          const url = new URL(entry.name);
-          return url.hostname.includes('forbes.com');
-        } catch {
-          return false;
-        }
-      })
-      .sort((a, b) => b.duration - a.duration)
-      .slice(0, 5);
-  });
+// Write CSV header
+fs.writeFileSync(performanceCsvPath, 'Page,URL,LoadTime(ms),TopSlowResources\n');
 
-  console.log(`\nTop 5 slowest internal resources for ${pageUrl}:`);
-  console.table(performanceEntries);
-}
+test('Delayed audit of Forbes AU pages with performance CSV', async ({ page }) => {
+  for (let i = 0; i < pages.length; i++) {
+    const { url, title } = pages[i];
+    const screenshotPath = path.join(screenshotsDir, `${title.toLowerCase().replace(/ /g, '-')}.png`);
+    const resources: { url: string; duration: number }[] = [];
 
-async function runPageAudit(page: Page, pageUrl: string, expectedTitle: string) {
-  const start = Date.now();
-  const title = test.info().title.replace(/ /g, '-');
+    const requestTimings = new Map<string, number>();
 
-  try {
-    console.log(`[STATUS] Starting audit for ${test.info().title}`);
-    await setupPage(page);
-    await page.goto(pageUrl);
+    page.on('request', request => {
+      if (request.url().includes('forbes.com/advisor/au/')) {
+        requestTimings.set(request.url(), Date.now());
+      }
+    });
 
-    // Basic page checks
-    await expect(page.locator('h1')).toContainText(expectedTitle);
-    await expect(page.getByRole('link', { name: 'forbes', exact: true })).toBeVisible();
+    page.on('response', response => {
+      const requestUrl = response.url();
+      if (requestTimings.has(requestUrl)) {
+        const start = requestTimings.get(requestUrl)!;
+        const duration = Date.now() - start;
+        resources.push({ url: requestUrl, duration });
+      }
+    });
 
-    // Performance metrics
-    const loadTime = ((Date.now() - start) / 1000).toFixed(3);
-    test.info().annotations.push({ type: 'metric', description: `LoadTime:${loadTime}` });
-    await capturePerformanceMetrics(page, pageUrl);
+    try {
+      const startTime = Date.now();
+      await page.goto(url, { waitUntil: 'load' });
 
-    // Screenshot
-    await page.screenshot({ path: path.join(screenshotsDir, `${title}.png`), fullPage: true });
-    console.log(`[INFO] Screenshot saved for ${test.info().title} audit`);
-    console.log(`[STATUS] ${test.info().title} audit complete ✅`);
-  } catch (error) {
-    console.error(`[ERROR] ${test.info().title} audit failed ❌`, error);
-    await page.screenshot({ path: path.join(screenshotsDir, `${title}-failure.png`), fullPage: true });
-    throw error;
+      const loadTime = await page.evaluate(() => {
+        const timing = window.performance.timing;
+        return timing.loadEventEnd - timing.navigationStart;
+      });
+
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.screenshot({ path: screenshotPath, fullPage: true });
+
+      const topResources = resources
+        .sort((a, b) => b.duration - a.duration)
+        .slice(0, 5)
+        .map(r => `${r.url} (${r.duration}ms)`)
+        .join('; ');
+
+      fs.appendFileSync(performanceCsvPath, `"${title}","${url}",${loadTime},"${topResources}"\n`);
+
+      console.log(`✅ ${title} load time: ${loadTime} ms`);
+    } catch (err) {
+      console.error(`❌ Error visiting ${title}:`, err);
+    }
+
+    if (i < pages.length - 1) {
+      console.log('⏳ Waiting 60 seconds...');
+      await delay(60000);
+    }
   }
-}
-
-// Common assertions that are used across all pages
-async function verifyCommonElements(page: Page) {
-  await expect(page.getByRole('link', { name: 'Forbes Logo' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Subscribe' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'forbes', exact: true })).toBeVisible();
-}
-
-// Performance metrics tracking with total load time
-async function trackPerformanceMetrics(page: Page, pageUrl: string) {
-  const startTime = Date.now();
-  
-  const performanceEntries = await page.evaluate(() => {
-    return performance.getEntriesByType('resource')
-      .map(entry => ({
-        name: entry.name,
-        duration: Number(entry.duration.toFixed(1)),
-        initiatorType: (entry as PerformanceResourceTiming).initiatorType || 'unknown'
-      }))
-      .filter(entry => {
-        try {
-          const url = new URL(entry.name);
-          return url.hostname.includes('forbes.com');
-        } catch {
-          return false;
-        }
-      })
-      .sort((a, b) => b.duration - a.duration)
-      .slice(0, 5);
-  });
-
-  const totalLoadTime = ((Date.now() - startTime) / 1000).toFixed(3);
-  console.log(`\nTotal Load Time for ${pageUrl}: ${totalLoadTime} seconds`);
-  console.log(`\nTop 5 slowest internal resources for ${pageUrl}:`);
-  console.table(performanceEntries);
-  
-  // Add load time to test annotations
-  test.info().annotations.push({ 
-    type: 'metric', 
-    description: `Total Load Time: ${totalLoadTime}s` 
-  });
-}
-
-// Home page test
-test('Home page verification', async ({ page }) => {
-  await setupPage(page);
-  await page.goto('https://www.forbes.com/advisor/au/');
-  await expect(page.locator('h1')).toContainText('Smart Financial Decisions Made Simple');
-  await expect(page.getByRole('link', { name: 'Forbes Logo' })).toBeVisible();
-  await expect(page.getByRole('img', { name: 'Smart Financial Decisions' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Subscribe' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'forbes', exact: true })).toBeVisible();
-  await trackPerformanceMetrics(page, 'Home page');
-  await delay(60000); // 1 minute delay
-});
-
-// Investing page test
-test('Investing page verification', async ({ page }) => {
-  await setupPage(page);
-  await page.goto('https://www.forbes.com/advisor/au/investing/');
-  await expect(page.locator('h1')).toContainText('How To Invest');
-  await expect(page.getByRole('link', { name: 'Forbes Logo' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Subscribe' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'forbes', exact: true })).toBeVisible();
-  await page.getByRole('link', { name: 'How To Invest', exact: true }).click();
-  await expect(page.getByRole('link', { name: 'How To Invest', exact: true })).toBeVisible();
-  await trackPerformanceMetrics(page, 'Investing page');
-  await delay(60000); // 1 minute delay
 });
