@@ -1,4 +1,4 @@
-name: Playwright Site Status
+name: Playwright html
 
 on:
   schedule:
