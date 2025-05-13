@@ -1,99 +1,80 @@
 const fs = require('fs');
 const path = require('path');
 
-const csvPath = path.join(__dirname, 'reports', 'performance-metrics.csv');
-const screenshotsDir = path.join(__dirname, 'screenshots');
-const htmlPath = path.join(__dirname, 'reports', 'report.html');
+// Paths
+const reportsDir = './reports';
+const screenshotsDir = './screenshots';
+const csvPath = path.join(reportsDir, 'performance-metrics.csv');
+const outputHtmlPath = path.join(reportsDir, 'report.html');
 
-function parseCSV(csvFilePath) {
-  const lines = fs.readFileSync(csvFilePath, 'utf-8').trim().split('\n');
-  const [header, ...rows] = lines;
-  return rows.map(row => {
-    const [page, url, loadTime, topResources] = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(field =>
-      field.replace(/^"|"$/g, '')
-    );
+// Read CSV
+const csvData = fs.readFileSync(csvPath, 'utf-8');
+const rows = csvData.trim().split('\n').slice(1); // Remove header
 
-    const resources = topResources.split(';').map(item => item.trim()).filter(Boolean);
-    return { page, url, loadTime, resources };
-  });
-}
+let summaryTable = `
+  <h2>Summary</h2>
+  <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+    <tr style="background-color: #333; color: #fff;">
+      <th>Page</th>
+      <th>URL</th>
+      <th>Load Time (ms)</th>
+    </tr>
+`;
 
-function generateHTMLReport(data) {
-  return `
-    <html>
-      <head>
-        <title>Performance Report</title>
-        <style>
-          body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f9f9f9;
-          }
-          h1 {
-            color: #333;
-          }
-          h2 {
-            margin-top: 40px;
-            color: #444;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 5px;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background-color: #fff;
-          }
-          th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: left;
-          }
-          th {
-            background-color: #f0f0f0;
-            color: #333;
-          }
-          img {
-            max-width: 100%;
-            height: auto;
-            border: 1px solid #ccc;
-            margin-top: 10px;
-          }
-          ol {
-            margin: 10px 0 10px 20px;
-          }
-        </style>
-      </head>
-      <body>
-        <h1>Forbes AU Site Audit Report</h1>
-        ${data
-          .map(item => {
-            const screenshotName = `${item.page.toLowerCase().replace(/ /g, '-')}.png`;
-            const screenshotPath = path.join('screenshots', screenshotName);
+let detailedReports = '';
 
-            const numberedResources = item.resources.map((res, index) => `<li>${res}</li>`).join('');
+// Generate table rows and screenshot sections
+for (const row of rows) {
+  const [title, url, loadTime, resources] = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, ''));
 
-            return `
-              <h2>${item.page}</h2>
-              <table>
-                <tr><th>URL</th><td><a href="${item.url}" target="_blank">${item.url}</a></td></tr>
-                <tr><th>Load Time (ms)</th><td>${item.loadTime}</td></tr>
-                <tr><th>Top 5 Slowest Resources</th><td><ol>${numberedResources}</ol></td></tr>
-              </table>
-              <div>
-                <strong>Screenshot:</strong><br>
-                <img src="../screenshots/${screenshotName}" alt="${item.page} Screenshot" />
-              </div>
-            `;
-          })
-          .join('')}
-      </body>
-    </html>
+  summaryTable += `
+    <tr>
+      <td>${title}</td>
+      <td><a href="${url}" target="_blank">${url}</a></td>
+      <td>${loadTime}</td>
+    </tr>
+  `;
+
+  // Format top resources as numbered list
+  const topResources = resources.split('; ').map((r, i) => `<li>${r}</li>`).join('');
+
+  // Match screenshot filename format
+  const screenshotFile = `${title.toLowerCase().replace(/ /g, '-')}.png`;
+  const screenshotPath = path.join(screenshotsDir, screenshotFile);
+  const screenshotExists = fs.existsSync(screenshotPath);
+
+  detailedReports += `
+    <h3>${title}</h3>
+    <p><strong>URL:</strong> <a href="${url}" target="_blank">${url}</a></p>
+    <p><strong>Load Time:</strong> ${loadTime} ms</p>
+    <p><strong>Top 5 Slowest Resources:</strong></p>
+    <ol>${topResources}</ol>
+    ${screenshotExists ? `<img src="../screenshots/${screenshotFile}" alt="${title} Screenshot" style="max-width: 100%; border: 1px solid #ccc;" />` : '<p><em>No screenshot available</em></p>'}
+    <hr />
   `;
 }
 
-// Generate report
-const data = parseCSV(csvPath);
-const html = generateHTMLReport(data);
-fs.writeFileSync(htmlPath, html, 'utf-8');
-console.log(`✅ HTML report with screenshots saved at ${htmlPath}`);
+summaryTable += '</table>';
+
+// Full HTML
+const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Site Audit Report</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 40px;">
+  <h1 style="color: #003366;">📊 Site Performance Summary Report</h1>
+  ${summaryTable}
+  <br />
+  <h2>Details</h2>
+  ${detailedReports}
+</body>
+</html>
+`;
+
+// Write to HTML file
+fs.writeFileSync(outputHtmlPath, htmlContent, 'utf-8');
+
+console.log(`✅ HTML report generated at ${outputHtmlPath}`);
