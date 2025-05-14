@@ -46,6 +46,41 @@ const pages = [
     title: 'CD Rates',
     url: 'https://www.usatoday.com/money/blueprint/banking/cds/best-cd-rates/',
     h1: 'Best CD rates of 2024'
+  },
+{
+    title: 'Dividend ETFs',
+    url: 'https://www.usatoday.com/money/blueprint/investing/best-dividend-etf/',
+    h1: 'Best dividend ETFs of 2024'
+  },
+  {
+    title: 'Best Credit Cards',
+    url: 'https://www.usatoday.com/money/blueprint/credit-cards/best-credit-cards/',
+    h1: 'Best credit cards of 2024'
+  },
+  {
+    title: 'Chase Sapphire Review',
+    url: 'https://www.usatoday.com/money/blueprint/credit-cards/reviews/chase-sapphire-preferred/',
+    h1: 'Chase Sapphire Preferred review: A traveler’s delight packed with perks at a low annual fee'
+  },
+  {
+    title: 'Personal Loans',
+    url: 'https://www.usatoday.com/money/blueprint/personal-loans/best-personal-loans/',
+    h1: 'Best personal loans of 2024'
+  },
+  {
+    title: 'Private Student Loans',
+    url: 'https://www.usatoday.com/money/blueprint/student-loans/best-private-student-loans/',
+    h1: 'Best private student loans of 2024'
+  },
+  {
+    title: 'Protect 401k',
+    url: 'https://www.usatoday.com/money/blueprint/retirement/protect-your-401k-during-recession/',
+    h1: 'Protecting your 401(k) during a recession'
+  },
+  {
+    title: 'LLC Services',
+    url: 'https://www.usatoday.com/money/blueprint/business/business-formation/best-llc-services/',
+    h1: 'Best LLC services of 2024'
   }
 ];
 async function delay(ms: number) {
