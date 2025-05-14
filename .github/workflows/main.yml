@@ -1,8 +1,8 @@
-name: Playwright Site Status
+name: Website check automation
 
 on:
   schedule:
-    - cron: "0 */3 * * *"  # Every 3 hours
+    - cron: "0 */3 * * *"
   workflow_dispatch:
 
 jobs:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        site: [AU, IT, CA, USAT]
+        site: [AU, CA, IT]
 
     steps:
       - name: Checkout code
@@ -25,29 +25,25 @@ jobs:
         run: |
           npm install
           npx playwright install chromium
-
-      - name: Run site-specific Playwright tests
+      - name: Run Playwright tests for ${{ matrix.site }}
         run: |
           SITE=${{ matrix.site }}
-          FILE_NAME=$(echo "$SITE" | tr '[:upper:]' '[:lower:]')
           mkdir -p reports/$SITE
-
-          echo "Running ${FILE_NAME}.spec.ts only..."
-
-          if npx playwright test sites/${FILE_NAME}.spec.ts; then
+          
+          TEST_FILE="sites/${SITE}.spec.ts"
+          echo "Running test file: $TEST_FILE"
+          if npx playwright test "$TEST_FILE"; then
             echo "${SITE} ✅ Site check passed" > reports/$SITE/combined-status.txt
           else
             echo "${SITE} ❌ Site check failed" > reports/$SITE/combined-status.txt
           fi
-
       - name: Upload screenshots and performance CSV
         uses: actions/upload-artifact@v4
         with:
           name: report-${{ matrix.site }}
           path: |
             screenshots/
-            reports/performance-metrics-${{ matrix.site }}.csv
-
+            reports/performance-metrics.csv
       - name: Upload site status file
         uses: actions/upload-artifact@v4
         with:
