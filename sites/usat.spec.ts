@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 
-test.setTimeout(900000); // 15 minutes
+test.setTimeout(360000); // 6 minutes
 
 const screenshotsDir = './screenshots';
 const reportsDir = './reports';
@@ -21,7 +21,7 @@ const pages = [
     title: 'Auto Insurance',
     url: 'https://www.usatoday.com/money/blueprint/auto-insurance/best-auto-insurance/',
     h1: 'Best car insurance companies'
-  }
+  },
 ];
 
 async function delay(ms: number) {
@@ -33,7 +33,7 @@ fs.writeFileSync(performanceCsvPath, 'Page,URL,LoadTime(ms),TopSlowResources\n')
 
 test('Delayed audit of USA TODAY Blueprint pages with performance CSV', async ({ page }) => {
   for (let i = 0; i < pages.length; i++) {
-    const { url, title, h1, selector } = pages[i];
+    const { url, title } = pages[i];
     const screenshotPath = path.join(screenshotsDir, `usat-${title.toLowerCase().replace(/ /g, '-')}.png`);
     const resources: { url: string; duration: number }[] = [];
 
@@ -46,16 +46,16 @@ test('Delayed audit of USA TODAY Blueprint pages with performance CSV', async ({
     });
 
     page.on('response', response => {
-      const reqUrl = response.url();
-      if (requestTimings.has(reqUrl)) {
-        const start = requestTimings.get(reqUrl)!;
+      const requestUrl = response.url();
+      if (requestTimings.has(requestUrl)) {
+        const start = requestTimings.get(requestUrl)!;
         const duration = Date.now() - start;
-        resources.push({ url: reqUrl, duration });
+        resources.push({ url: requestUrl, duration });
       }
     });
 
     try {
-      const start = Date.now();
+      const startTime = Date.now();
       await page.goto(url, { waitUntil: 'load' });
 
       const loadTime = await page.evaluate(() => {
@@ -73,6 +73,7 @@ test('Delayed audit of USA TODAY Blueprint pages with performance CSV', async ({
         .join('; ');
 
       fs.appendFileSync(performanceCsvPath, `"${title}","${url}",${loadTime},"${topResources}"\n`);
+
       console.log(`✅ ${title} load time: ${loadTime} ms`);
     } catch (err) {
       console.error(`❌ Error visiting ${title}:`, err);
