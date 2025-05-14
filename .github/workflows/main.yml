@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        site: [AU]
+        site: [AU] # You can extend this if needed later, e.g., [AU, CA, IT, US]
 
     steps:
       - name: Checkout code
@@ -26,15 +26,14 @@ jobs:
           npm install
           npx playwright install chromium
 
-      - name: Run Playwright tests for ${{ matrix.site }}
+      - name: Run all Playwright tests in sites/ folder
         run: |
           SITE=${{ matrix.site }}
           mkdir -p reports/$SITE
-          
-          TEST_FILE="sites/${SITE}.spec.ts"
-          echo "Running test file: $TEST_FILE"
 
-          if npx playwright test "$TEST_FILE"; then
+          echo "Running all .spec.ts files in sites/ folder..."
+
+          if npx playwright test sites/; then
             echo "${SITE} ✅ Site check passed" > reports/$SITE/combined-status.txt
           else
             echo "${SITE} ❌ Site check failed" > reports/$SITE/combined-status.txt
