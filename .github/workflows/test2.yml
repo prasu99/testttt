@@ -3,7 +3,6 @@ name: Playwright html
 on:
   schedule:
     - cron: "0 */3 * * *"  # Every 3 hours
-
   workflow_dispatch:
 
 jobs:
@@ -33,9 +32,9 @@ jobs:
           FILE_NAME=$(echo "$SITE" | tr '[:upper:]' '[:lower:]')
           mkdir -p reports/$SITE
 
-
-           TEST_FILE="sites/${SITE}.spec.ts"
+          TEST_FILE="sites/${SITE}.spec.ts"
           echo "Running test file: $TEST_FILE"
+
           if npx playwright test "$TEST_FILE" --reporter=html --output=reports/$SITE; then
             echo "${SITE} ✅ Site check passed" > reports/$SITE/combined-status.txt
           else
@@ -43,7 +42,7 @@ jobs:
           fi
 
       - name: Generate HTML performance report
-        run: node generateHtmlReport.js
+        run: SITE=${{ matrix.site }} node generateHtmlReport.js
 
       - name: Upload screenshots and performance CSV
         uses: actions/upload-artifact@v4
@@ -52,7 +51,7 @@ jobs:
           path: |
             screenshots/
             reports/performance-metrics-${{ matrix.site }}.csv
-            reports/performance-report.html
+            reports/performance-report-${{ matrix.site }}.html
 
       - name: Upload site status file
         uses: actions/upload-artifact@v4
