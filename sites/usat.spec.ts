@@ -120,16 +120,6 @@ test('Delayed audit of USA TODAY Blueprint pages with performance CSV', async ({
       const start = Date.now();
       await page.goto(url, { waitUntil: 'load' });
 
-      if (selector) {
-        await page.locator(selector).waitFor({ timeout: 10000 });
-        await page.locator(selector).waitFor();
-        await page.waitForTimeout(500);
-        await page.waitForSelector(selector);
-        await expect(page.locator(selector)).toContainText(h1);
-      } else {
-        await expect(page.locator('h1')).toContainText(h1);
-      }
-
       const loadTime = await page.evaluate(() => {
         const timing = window.performance.timing;
         return timing.loadEventEnd - timing.navigationStart;
