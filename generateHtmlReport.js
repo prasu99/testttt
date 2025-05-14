@@ -1,8 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 
-const csvPath = path.join(__dirname, 'reports', 'performance-metrics.csv');
-const htmlPath = path.join(__dirname, 'reports', 'performance-report.html');
+const site = process.env.SITE || 'AU'; // Default to AU
+const csvFilename = `performance-metrics-${site}.csv`;
+const htmlFilename = `performance-report-${site}.html`;
+
+const csvPath = path.join(__dirname, 'reports', csvFilename);
+const htmlPath = path.join(__dirname, 'reports', htmlFilename);
+
+if (!fs.existsSync(csvPath)) {
+  console.error(`❌ CSV not found at: ${csvPath}`);
+  process.exit(1);
+}
 
 const csv = fs.readFileSync(csvPath, 'utf-8').trim();
 const lines = csv.split('\n');
@@ -14,7 +23,7 @@ const html = `
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Performance Report</title>
+  <title>Performance Report - ${site}</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; }
     h1 {
@@ -49,7 +58,7 @@ const html = `
   </style>
 </head>
 <body>
-  <h1>Forbes AU Site Performance Report</h1>
+  <h1>Forbes ${site} Site Performance Report</h1>
   <table>
     <thead>
       <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
