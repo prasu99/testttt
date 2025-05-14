@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        site: [AU]
+        site: [AU, IT, CA, USAT]
 
     steps:
       - name: Checkout code
@@ -26,14 +26,14 @@ jobs:
           npm install
           npx playwright install chromium
 
-      - name: Run Playwright tests for ${{ matrix.site }}
+      - name: Run site-specific Playwright tests
         run: |
           SITE=${{ matrix.site }}
+          FILE_NAME=$(echo "$SITE" | tr '[:upper:]' '[:lower:]')
           mkdir -p reports/$SITE
 
-          TEST_FILE="sites/${SITE}.spec.ts"
 
-          echo "Running test file: $TEST_FILE"
+          echo "Running ${FILE_NAME}.spec.ts only..."
 
           if npx playwright test "$TEST_FILE" --reporter=html --output=reports/$SITE; then
             echo "${SITE} ✅ Site check passed" > reports/$SITE/combined-status.txt
@@ -44,16 +44,16 @@ jobs:
       - name: Generate HTML performance report
         run: node generateHtmlReport.js
 
-      - name: Upload site report
+      - name: Upload screenshots and performance CSV
         uses: actions/upload-artifact@v4
         with:
           name: report-${{ matrix.site }}
           path: |
             screenshots/
-            reports/performance-metrics.csv
+            reports/performance-metrics-${{ matrix.site }}.csv
             reports/performance-report.html
 
-      - name: Upload site status
+      - name: Upload site status file
         uses: actions/upload-artifact@v4
         with:
           name: status-${{ matrix.site }}
