@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        site: [AU] # You can extend this if needed later, e.g., [AU, CA, IT, US]
+        site: [AU, CA]
 
     steps:
       - name: Checkout code
