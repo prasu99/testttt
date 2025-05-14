@@ -32,9 +32,10 @@ jobs:
           FILE_NAME=$(echo "$SITE" | tr '[:upper:]' '[:lower:]')
           mkdir -p reports/$SITE
 
-          echo "Running ${FILE_NAME}.spec.ts only..."
+          TEST_FILE="checks/${SITE}.spec.ts"
+          echo "Running test file: $TEST_FILE"
 
-          if npx playwright test sites/${FILE_NAME}.spec.ts; then
+          if npx playwright test checks/${FILE_NAME}.spec.ts; then
             echo "${SITE} ✅ Site check passed" > reports/$SITE/combined-status.txt
           else
             echo "${SITE} ❌ Site check failed" > reports/$SITE/combined-status.txt
