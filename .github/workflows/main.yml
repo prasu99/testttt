@@ -2,7 +2,7 @@ name: Playwright Site Status
 
 on:
   schedule:
-    - cron: "0 */3 * * *"  # Runs every 3 hours
+    - cron: "0 */3 * * *"  # Every 3 hours
   workflow_dispatch:
 
 jobs:
@@ -26,14 +26,15 @@ jobs:
           npm install
           npx playwright install chromium
 
-      - name: Run all Playwright tests in sites/ folder
+      - name: Run site-specific Playwright tests
         run: |
           SITE=${{ matrix.site }}
+          FILE_NAME=$(echo "$SITE" | tr '[:upper:]' '[:lower:]')
           mkdir -p reports/$SITE
 
-          echo "Running all .spec.ts files in sites/ folder..."
+          echo "Running ${FILE_NAME}.spec.ts only..."
 
-          if npx playwright test sites/; then
+          if npx playwright test sites/${FILE_NAME}.spec.ts; then
             echo "${SITE} ✅ Site check passed" > reports/$SITE/combined-status.txt
           else
             echo "${SITE} ❌ Site check failed" > reports/$SITE/combined-status.txt
