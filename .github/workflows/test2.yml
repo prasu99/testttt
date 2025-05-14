@@ -34,8 +34,8 @@ jobs:
           mkdir -p reports/$SITE
 
 
-          echo "Running ${FILE_NAME}.spec.ts only..."
-
+           TEST_FILE="sites/${SITE}.spec.ts"
+          echo "Running test file: $TEST_FILE"
           if npx playwright test "$TEST_FILE" --reporter=html --output=reports/$SITE; then
             echo "${SITE} ✅ Site check passed" > reports/$SITE/combined-status.txt
           else
