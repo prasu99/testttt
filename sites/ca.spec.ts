@@ -12,25 +12,60 @@ if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
 if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir);
 
 const pages = [
-  {
+ {
     title: 'Home',
     url: 'https://www.forbes.com/advisor/ca/',
     h1: 'Smart Financial Decisions Made Simple'
   },
   {
-    title: 'Investing',
-    url: 'https://www.forbes.com/advisor/ca/investing/',
-    h1: 'How To Invest'
-  },
-  {
     title: 'Credit Cards',
-    url: 'https://www.forbes.com/advisor/ca/credit-cards/best-credit-cards/',
-    h1: 'Best Credit Cards in Canada'
+    url: 'https://www.forbes.com/advisor/ca/credit-cards/best/best-credit-cards/',
+    h1: "Compare Canada's Best Credit Cards and Choose Your Perfect Match"
   },
   {
-    title: 'Loans',
-    url: 'https://www.forbes.com/advisor/ca/loans/best-personal-loans/',
-    h1: 'Best Personal Loans in Canada'
+    title: 'Business',
+    url: 'https://www.forbes.com/advisor/ca/business/',
+    h1: 'Transform Your Small Business'
+  },
+  {
+    title: 'Cash Back Credit Cards',
+    url: 'https://www.forbes.com/advisor/ca/credit-cards/best/cash-back/',
+    h1: 'Best Cash Back Credit Cards In Canada For 2025'
+  },
+  {
+    title: 'Mortgage Lenders',
+    url: 'https://www.forbes.com/advisor/ca/mortgages/best-mortgage-lenders/',
+    h1: 'Best Mortgage Lenders In Canada For 2025'
+  },
+  {
+    title: 'Mortgage Rates',
+    url: 'https://www.forbes.com/advisor/ca/mortgages/best-mortgage-rates-in-canada/',
+    h1: 'Best Mortgage Rates In Canada For 2025'
+  },
+  {
+    title: 'Personal Loans',
+    url: 'https://www.forbes.com/advisor/ca/personal-loans/best-personal-loans/',
+    h1: 'Best Personal Loans In Canada For 2025'
+  },
+  {
+    title: 'GIC Rates',
+    url: 'https://www.forbes.com/advisor/ca/banking/gic/best-gic-rates/',
+    h1: 'Best GIC Rates In Canada For 2025'
+  },
+  {
+    title: 'Savings Accounts',
+    url: 'https://www.forbes.com/advisor/ca/banking/savings/best-savings-accounts/',
+    h1: 'Best Savings Accounts In Canada For 2025'
+  },
+  {
+    title: 'Chequing Accounts',
+    url: 'https://www.forbes.com/advisor/ca/banking/chequing/best-chequing-accounts/',
+    h1: 'Best Chequing Accounts In Canada For 2025'
+  },
+  {
+    title: 'Travel Credit Cards',
+    url: 'https://www.forbes.com/advisor/ca/credit-cards/best/travel/',
+    h1: 'Best Travel Credit Cards In Canada For 2025'
   }
 ];
 
