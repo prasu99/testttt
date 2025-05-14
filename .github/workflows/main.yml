@@ -2,7 +2,7 @@ name: Playwright Site Status
 
 on:
   schedule:
-    - cron: "0 */3 * * *"
+    - cron: "0 */3 * * *"  # Runs every 3 hours
   workflow_dispatch:
 
 jobs:
@@ -45,7 +45,7 @@ jobs:
           name: report-${{ matrix.site }}
           path: |
             screenshots/
-            reports/performance-metrics.csv
+            reports/performance-metrics-${{ matrix.site }}.csv
 
       - name: Upload site status file
         uses: actions/upload-artifact@v4
