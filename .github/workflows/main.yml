@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        site: [AU, IT]
+        site: [AU, IT, CA]
 
     steps:
       - name: Checkout code
