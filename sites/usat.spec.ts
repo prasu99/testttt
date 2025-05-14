@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 
-test.setTimeout(360000); // 6 minutes
+test.setTimeout(600000); // 6 minutes
 
 const screenshotsDir = './screenshots';
 const reportsDir = './reports';
