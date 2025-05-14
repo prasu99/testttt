@@ -6,7 +6,7 @@ test.setTimeout(360000); // 6 minutes
 
 const screenshotsDir = './screenshots';
 const reportsDir = './reports';
-const performanceCsvPath = path.join(reportsDir, 'performance-metrics.csv');
+const performanceCsvPath = path.join(reportsDir, 'performance-metrics-AU.csv');
 
 if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
 if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir);
