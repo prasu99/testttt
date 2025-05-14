@@ -120,6 +120,12 @@ test('Delayed audit of USA TODAY Blueprint pages with performance CSV', async ({
       const start = Date.now();
       await page.goto(url, { waitUntil: 'load' });
 
+      // Optional soft validation
+      const headerText = await page.locator(selector || 'h1').textContent();
+      if (!headerText || !headerText.includes(h1)) {
+        console.warn(`⚠️ Warning: Expected heading not found on ${title}. Found: "${headerText}"`);
+      }
+
       const loadTime = await page.evaluate(() => {
         const timing = window.performance.timing;
         return timing.loadEventEnd - timing.navigationStart;
