@@ -1,19 +1,41 @@
 const fs = require('fs');
 const path = require('path');
-
 const site = process.env.SITE || 'AU'; // Default to AU
-const csvFilename = `performance-metrics-${site}.csv`;
-const htmlFilename = `performance-report-${site}.html`;
 
-// Ensure we read/write from the correct subfolder like reports/IT/
-const siteDir = path.join(__dirname, 'reports', site);
-const csvPath = path.join(siteDir, csvFilename);
+// Define paths based on your project structure
+const reportsDir = path.join(__dirname, 'reports');
+const siteDir = path.join(reportsDir, site);
+
+// Look for the CSV file in multiple possible locations
+const csvFilename = `performance-metrics-${site}.csv`;
+let csvPath;
+
+// Possible locations where the CSV might be (based on your test script)
+const possibleCsvPaths = [
+  path.join(reportsDir, csvFilename),               // ./reports/performance-metrics-SITE.csv
+  path.join(siteDir, csvFilename),                  // ./reports/SITE/performance-metrics-SITE.csv
+  path.join(__dirname, 'reports', csvFilename)      // /reports/performance-metrics-SITE.csv
+];
+
+// Find the first existing CSV file
+csvPath = possibleCsvPaths.find(p => fs.existsSync(p));
+
+// Output HTML to the site-specific directory
+const htmlFilename = `performance-report-${site}.html`;
 const htmlPath = path.join(siteDir, htmlFilename);
 
-if (!fs.existsSync(csvPath)) {
-  console.error(`❌ CSV not found at: ${csvPath}`);
+// Make sure site directory exists
+if (!fs.existsSync(siteDir)) {
+  fs.mkdirSync(siteDir, { recursive: true });
+}
+
+if (!csvPath) {
+  console.error(`❌ CSV not found for site ${site}. Looked in:`);
+  possibleCsvPaths.forEach(p => console.error(`  - ${p}`));
   process.exit(1);
 }
+
+console.log(`✅ Found CSV at: ${csvPath}`);
 
 const csv = fs.readFileSync(csvPath, 'utf-8').trim();
 const lines = csv.split('\n');
