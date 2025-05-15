@@ -6,7 +6,7 @@ test.setTimeout(900000); // 15 minutes
 
 const screenshotsDir = './screenshots';
 const reportsDir = './reports';
-const performanceCsvPath = path.join(reportsDir, 'performance-metrics-IT.csv');
+const performanceCsvPath = path.join(reportsDir, 'performance-metrics.csv');
 
 if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
 if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir);
@@ -27,7 +27,7 @@ const pages = [
     url: 'https://www.forbes.com/advisor/it/carta-di-credito/migliori-carte-di-credito/',
     h1: 'Le migliori carte di credito nel 2025'
   },
- {
+  {
     title: 'Personal Loans',
     url: 'https://www.forbes.com/advisor/it/prestiti/miglior-prestito-online/',
     h1: 'I migliori prestiti online, la classifica'
@@ -100,7 +100,6 @@ test('Delayed audit of Forbes IT pages with performance CSV', async ({ page }) =
     });
 
     try {
-      const startTime = Date.now();
       await page.goto(url, { waitUntil: 'load' });
 
       const loadTime = await page.evaluate(() => {
