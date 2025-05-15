@@ -21,51 +21,6 @@ const pages = [
     title: 'Investing',
     url: 'https://www.forbes.com/advisor/it/investire/',
     h1: 'Investire soldi'
-  },
-  {
-    title: 'Credit Cards',
-    url: 'https://www.forbes.com/advisor/it/carta-di-credito/migliori-carte-di-credito/',
-    h1: 'Le migliori carte di credito nel 2025'
-  },
-  {
-    title: 'Personal Loans',
-    url: 'https://www.forbes.com/advisor/it/prestiti/miglior-prestito-online/',
-    h1: 'I migliori prestiti online, la classifica'
-  },
-  {
-    title: 'Car Insurance',
-    url: 'https://www.forbes.com/advisor/it/assicurazione-auto/assicurazione-auto-online-economica/',
-    h1: 'Assicurazione auto online più economica nel 2025'
-  },
-  {
-    title: 'Travel Insurance',
-    url: 'https://www.forbes.com/advisor/it/assicurazione-viaggio/',
-    h1: 'Assicurazione viaggio: quando farla e quale scegliere'
-  },
-  {
-    title: 'Life Insurance',
-    url: 'https://www.forbes.com/advisor/it/assicurazione-vita/miglior-assicurazione-vita/',
-    h1: 'La migliore assicurazione vita'
-  },
-  {
-    title: 'Current Account',
-    url: 'https://www.forbes.com/advisor/it/conto-corrente/miglior-conto-corrente-online/',
-    h1: 'Il miglior conto corrente online: classifica 2025'
-  },
-  {
-    title: 'Business',
-    url: 'https://www.forbes.com/advisor/it/business/',
-    h1: 'Crea il tuo business'
-  },
-  {
-    title: 'Cryptocurrency',
-    url: 'https://www.forbes.com/advisor/it/investire/criptovalute/',
-    h1: 'Investire in criptovalute'
-  },
-  {
-    title: 'ETF',
-    url: 'https://www.forbes.com/advisor/it/investire/etf/',
-    h1: 'Investire in ETF'
   }
 ];
 
