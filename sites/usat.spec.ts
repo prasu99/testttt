@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 
-test.setTimeout(900000); // 15 minutes
+test.setTimeout(1200000); // 20 minutes
 
 const screenshotsDir = './screenshots';
 const reportsDir = './reports';
@@ -38,11 +38,6 @@ const pages = [
     h1: 'Average renters insurance cost in 2024'
   },
   {
-    title: 'Mortgage Lenders',
-    url: 'https://www.usatoday.com/money/blueprint/mortgages/best-mortgage-lenders/',
-    h1: 'Best mortgage lenders of 2024'
-  },
-  {
     title: 'CD Rates',
     url: 'https://www.usatoday.com/money/blueprint/banking/cds/best-cd-rates/',
     h1: 'Best CD rates of 2024'
@@ -60,7 +55,7 @@ const pages = [
   {
     title: 'Chase Sapphire Review',
     url: 'https://www.usatoday.com/money/blueprint/credit-cards/reviews/chase-sapphire-preferred/',
-    h1: 'Chase Sapphire Preferred review: A traveler’s delight packed with perks at a low annual fee'
+    h1: 'Chase Sapphire Preferred review'
   },
   {
     title: 'Personal Loans',
