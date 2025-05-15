@@ -5,8 +5,10 @@ const site = process.env.SITE || 'AU'; // Default to AU
 const csvFilename = `performance-metrics-${site}.csv`;
 const htmlFilename = `performance-report-${site}.html`;
 
-const csvPath = path.join(__dirname, 'reports', csvFilename);
-const htmlPath = path.join(__dirname, 'reports', htmlFilename);
+// 🔽 Use site-specific subdirectory
+const siteDir = path.join(__dirname, 'reports', site);
+const csvPath = path.join(siteDir, csvFilename);
+const htmlPath = path.join(siteDir, htmlFilename);
 
 if (!fs.existsSync(csvPath)) {
   console.error(`❌ CSV not found at: ${csvPath}`);
