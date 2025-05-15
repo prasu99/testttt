@@ -21,7 +21,12 @@ const pages = [
     title: '12 Best Travel Credit Cards In Canada For 2025-Forbes Advisor Canada',
     url: 'https://www.forbes.com/advisor/ca/credit-cards/best/travel/',
     h1: 'Best Travel Credit Cards In Canada For 2025'
-  }
+  },
+{
+    title: '12 Best Travel Credit Cards In Canada For 2025-Forbes Advisor Canada',
+    url: 'https://www.forbes.com/advisor/ca/credit-cards/best/travel/',
+    h1: 'Best Travel Credit Cards In Canada For 2025'
+}
 ];
 
 async function delay(ms: number) {
