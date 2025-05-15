@@ -4,12 +4,13 @@ import path from 'path';
 
 test.setTimeout(900000); // 15 minutes
 
-const screenshotsDir = './screenshots';
-const reportsDir = './reports';
-const performanceCsvPath = path.join(reportsDir, 'performance-metrics.csv');
+const site = process.env.SITE || 'AU'; // Get site from env or fallback
+const screenshotsDir = path.join('./screenshots', site);
+const reportsDir = path.join('./reports', site);
+const performanceCsvPath = path.join(reportsDir, `performance-metrics-${site}.csv`);
 
-if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
-if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir);
+if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir, { recursive: true });
+if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
 
 const pages = [
   {
@@ -31,7 +32,7 @@ async function delay(ms: number) {
 // Write CSV header
 fs.writeFileSync(performanceCsvPath, 'Page,URL,LoadTime(ms),TopSlowResources\n');
 
-test('Delayed audit of Forbes IT pages with performance CSV', async ({ page }) => {
+test(`Performance audit for Forbes ${site}`, async ({ page }) => {
   for (let i = 0; i < pages.length; i++) {
     const { url, title } = pages[i];
     const screenshotPath = path.join(screenshotsDir, `${title.toLowerCase().replace(/ /g, '-')}.png`);
@@ -40,7 +41,7 @@ test('Delayed audit of Forbes IT pages with performance CSV', async ({ page }) =
     const requestTimings = new Map<string, number>();
 
     page.on('request', request => {
-      if (request.url().includes('forbes.com/advisor/it/')) {
+      if (request.url().includes(`forbes.com/advisor/${site.toLowerCase()}/`)) {
         requestTimings.set(request.url(), Date.now());
       }
     });
