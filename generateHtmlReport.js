@@ -5,7 +5,7 @@ const site = process.env.SITE || 'AU'; // Default to AU
 const csvFilename = `performance-metrics-${site}.csv`;
 const htmlFilename = `performance-report-${site}.html`;
 
-// 🔽 Use site-specific subdirectory
+// Ensure we read/write from the correct subfolder like reports/IT/
 const siteDir = path.join(__dirname, 'reports', site);
 const csvPath = path.join(siteDir, csvFilename);
 const htmlPath = path.join(siteDir, htmlFilename);
