@@ -21,54 +21,7 @@ const pages = [
     title: '12 Best Travel Credit Cards In Canada For 2025-Forbes Advisor Canada',
     url: 'https://www.forbes.com/advisor/ca/credit-cards/best/travel/',
     h1: 'Best Travel Credit Cards In Canada For 2025'
-  },
-  {
-    title: '10 Best Cash Back Credit In Canada For 2025-Forbes Advisor Canada',
-    url: 'https://www.forbes.com/advisor/ca/credit-cards/best/cash-back/',
-    h1: 'Best Cash Back Credit Canada In Canada For 2025'
-  },
-  {
-    title: 'Business-Forbes-Advisor Canada',
-    url: 'https://www.forbes.com/advisor/ca/business/',
-    h1: 'Transform Your Small Business'
-  },
-  {
-    title: 'Best Mortgage Lenders In Canada For 2025-Forbes-Advisor Canada',
-    url: 'https://www.forbes.com/advisor/ca/mortgages/best-mortgage-lenders/',
-    h1: 'Best Mortgage Lenders In Canada For 2025'
-  },
-  {
-    title: 'Best Mortgage Rates In Canada For 2025',
-    url: 'https://www.forbes.com/advisor/ca/mortgages/best-mortgage-rates-in-canada/',
-    h1: 'Best Mortgage Rates In Canada For 2025'
-  },
-  {
-    title: 'Best Mortgage Rates In Canada-Forbes Advisor Canad ',
-    url: 'https://www.forbes.com/advisor/ca/mortgages/best-mortgage-rates-in-canada/',
-    h1: 'Best Mortgage Rates In Canada For 2025'
-  },
-  {
-    title: 'Best Personal Loans In Canada For 2025',
-    url: 'https://www.forbes.com/advisor/ca/personal-loans/best-personal-loans/',
-    h1: 'Best Personal Loans In Canada For 2025'
-  },
-  {
-    title: 'Best GIC Rates In Canada For 2025-Forbes Advisor Canad',
-    url: 'https://www.forbes.com/advisor/ca/banking/gic/best-gic-rates/',
-    h1: 'Best GIC Rates In Canada For 2025'
-  },
-  {
-    title: 'Best Savings Accounts In Canada For 2025-Forbes Advisor Canad',
-    url: 'https://www.forbes.com/advisor/ca/banking/savings/best-savings-accounts/',
-    h1: 'Best Savings Accounts In Canada For 2025'
-  },
-  {
-    title: 'Best Chequing Accounts In Canada For 2025-Forbes Advisor Canad',
-    url: 'https://www.forbes.com/advisor/ca/banking/chequing/best-chequing-accounts/',
-    h1: 'Best Chequing Accounts In Canada For 2025'
-
   }
-
 ];
 
 async function delay(ms: number) {
