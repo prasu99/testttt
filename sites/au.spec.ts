@@ -21,6 +21,11 @@ const pages = [
     title: 'Investing',
     url: 'https://www.forbes.com/advisor/au/investing/',
     h1: 'Investing in Australia'
+  },
+{
+    title: 'Investing',
+    url: 'https://www.forbes.com/advisor/au/investing/',
+    h1: 'Investing in Australia'
   }
 ];
 
