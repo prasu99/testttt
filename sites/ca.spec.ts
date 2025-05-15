@@ -2,71 +2,73 @@ import { test } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 
-test.setTimeout(360000); // 6 minutes
+test.setTimeout(900000); // 15 minutes
 
 const screenshotsDir = './screenshots';
 const reportsDir = './reports';
-const performanceCsvPath = path.join(reportsDir, 'performance-metrics-CA.csv');
+const performanceCsvPath = path.join(reportsDir, 'performance-metrics.csv');
 
 if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
 if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir);
 
 const pages = [
- {
-    title: 'Home',
+  {
+    title: 'Forbes Advisor Canada – Helping You Make Smart Financial Decisions',
     url: 'https://www.forbes.com/advisor/ca/',
     h1: 'Smart Financial Decisions Made Simple'
   },
   {
-    title: 'Credit Cards',
-    url: 'https://www.forbes.com/advisor/ca/credit-cards/best/best-credit-cards/',
-    h1: "Compare Canada's Best Credit Cards and Choose Your Perfect Match"
+    title: '12 Best Travel Credit Cards In Canada For 2025-Forbes Advisor Canada',
+    url: 'https://www.forbes.com/advisor/ca/credit-cards/best/travel/',
+    h1: 'Best Travel Credit Cards In Canada For 2025'
   },
   {
-    title: 'Business',
+    title: '10 Best Cash Back Credit In Canada For 2025-Forbes Advisor Canada',
+    url: 'https://www.forbes.com/advisor/ca/credit-cards/best/cash-back/',
+    h1: 'Best Cash Back Credit Canada In Canada For 2025'
+  },
+  {
+    title: 'Business-Forbes-Advisor Canada',
     url: 'https://www.forbes.com/advisor/ca/business/',
     h1: 'Transform Your Small Business'
   },
   {
-    title: 'Cash Back Credit Cards',
-    url: 'https://www.forbes.com/advisor/ca/credit-cards/best/cash-back/',
-    h1: 'Best Cash Back Credit Cards In Canada For 2025'
-  },
-  {
-    title: 'Mortgage Lenders',
+    title: 'Best Mortgage Lenders In Canada For 2025-Forbes-Advisor Canada',
     url: 'https://www.forbes.com/advisor/ca/mortgages/best-mortgage-lenders/',
     h1: 'Best Mortgage Lenders In Canada For 2025'
   },
   {
-    title: 'Mortgage Rates',
+    title: 'Best Mortgage Rates In Canada For 2025',
     url: 'https://www.forbes.com/advisor/ca/mortgages/best-mortgage-rates-in-canada/',
     h1: 'Best Mortgage Rates In Canada For 2025'
   },
   {
-    title: 'Personal Loans',
+    title: 'Best Mortgage Rates In Canada-Forbes Advisor Canad ',
+    url: 'https://www.forbes.com/advisor/ca/mortgages/best-mortgage-rates-in-canada/',
+    h1: 'Best Mortgage Rates In Canada For 2025'
+  },
+  {
+    title: 'Best Personal Loans In Canada For 2025',
     url: 'https://www.forbes.com/advisor/ca/personal-loans/best-personal-loans/',
     h1: 'Best Personal Loans In Canada For 2025'
   },
   {
-    title: 'GIC Rates',
+    title: 'Best GIC Rates In Canada For 2025-Forbes Advisor Canad',
     url: 'https://www.forbes.com/advisor/ca/banking/gic/best-gic-rates/',
     h1: 'Best GIC Rates In Canada For 2025'
   },
   {
-    title: 'Savings Accounts',
+    title: 'Best Savings Accounts In Canada For 2025-Forbes Advisor Canad',
     url: 'https://www.forbes.com/advisor/ca/banking/savings/best-savings-accounts/',
     h1: 'Best Savings Accounts In Canada For 2025'
   },
   {
-    title: 'Chequing Accounts',
+    title: 'Best Chequing Accounts In Canada For 2025-Forbes Advisor Canad',
     url: 'https://www.forbes.com/advisor/ca/banking/chequing/best-chequing-accounts/',
     h1: 'Best Chequing Accounts In Canada For 2025'
-  },
-  {
-    title: 'Travel Credit Cards',
-    url: 'https://www.forbes.com/advisor/ca/credit-cards/best/travel/',
-    h1: 'Best Travel Credit Cards In Canada For 2025'
+
   }
+
 ];
 
 async function delay(ms: number) {
