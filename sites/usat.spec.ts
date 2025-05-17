@@ -2,23 +2,19 @@ import { test } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 
-// Get site code from environment or default to 'USAT'
-const site = process.env.SITE || 'USAT';
+test.setTimeout(900000); // 15 minutes
 
-test.setTimeout(1200000); // 20 minutes
+const screenshotsDir = './screenshots';
+const reportsDir = './reports';
 
-// Directories and CSV file path specific to site
-const screenshotsDir = path.join('./screenshots', site);
-const reportsDir = path.join('./reports', site);
-const performanceCsvPath = path.join(reportsDir, `performance-metrics-${site}.csv`);
+if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
+if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir);
 
-// Ensure directories exist
-if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir, { recursive: true });
-if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
+const performanceCsvPath = path.join(reportsDir, 'performance-metrics-usat.csv');
+const performanceJsonPath = path.join(reportsDir, 'performance-summary-usat.json');
 
-// Define pages to test
 const pages = [
-  {
+   {
     title: 'Blueprint Home',
     url: 'https://www.usatoday.com/money/blueprint/',
     h1: 'USA TODAY Blueprint'
@@ -44,14 +40,17 @@ async function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Write CSV header (overwrite on each run)
+// Write CSV header
 fs.writeFileSync(performanceCsvPath, 'Page,URL,LoadTime(ms),TopSlowResources\n');
 
-test(`Delayed audit of ${site} pages with performance CSV`, async ({ page }) => {
+const performanceSummary: any[] = [];
+
+test('Delayed audit of Forbes USAT pages with performance CSV', async ({ page }) => {
   for (let i = 0; i < pages.length; i++) {
     const { url, title } = pages[i];
     const screenshotPath = path.join(screenshotsDir, `${title.toLowerCase().replace(/ /g, '-')}.png`);
     const resources: { url: string; duration: number }[] = [];
+
     const requestTimings = new Map<string, number>();
 
     page.on('request', request => {
@@ -70,6 +69,7 @@ test(`Delayed audit of ${site} pages with performance CSV`, async ({ page }) => 
     });
 
     try {
+      const startTime = Date.now();
       await page.goto(url, { waitUntil: 'load' });
 
       const loadTime = await page.evaluate(() => {
@@ -82,11 +82,21 @@ test(`Delayed audit of ${site} pages with performance CSV`, async ({ page }) => 
 
       const topResources = resources
         .sort((a, b) => b.duration - a.duration)
-        .slice(0, 5)
+        .slice(0, 5);
+
+      const topResourcesString = topResources
         .map(r => `${r.url} (${r.duration}ms)`)
         .join('; ');
 
-      fs.appendFileSync(performanceCsvPath, `"${title}","${url}",${loadTime},"${topResources}"\n`);
+      fs.appendFileSync(performanceCsvPath, `"${title}","${url}",${loadTime},"${topResourcesString}"\n`);
+
+      performanceSummary.push({
+        title,
+        url,
+        loadTime,
+        topResources,
+        screenshot: path.relative('.', screenshotPath) // relative path for HTML use
+      });
 
       console.log(`✅ ${title} load time: ${loadTime} ms`);
     } catch (err) {
@@ -98,4 +108,7 @@ test(`Delayed audit of ${site} pages with performance CSV`, async ({ page }) => 
       await delay(60000);
     }
   }
+
+  // Write JSON summary for HTML report
+  fs.writeFileSync(performanceJsonPath, JSON.stringify(performanceSummary, null, 2));
 });
