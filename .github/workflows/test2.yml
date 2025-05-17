@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        site: [AU, IT, CA, USAT]
+        site: [AU]
 
     steps:
       - name: Checkout code
@@ -41,22 +41,3 @@ jobs:
             screenshots/
             reports/performance-metrics-${{ matrix.site }}.csv
             reports/performance-report-${{ matrix.site }}.html
-
-      - name: Setup Python 
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
-      - name: Install Python dependencies
-        run: pip install requests
-
-      - name: Upload HTML report to SharePoint via Graph API
-        env:
-          TENANT_ID:     ${{ secrets.TENANT_ID }}
-          CLIENT_ID:     ${{ secrets.CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-          SITE_ID:       ${{ secrets.SITE_ID }}
-        run: |
-          python3 upload_to_graph.py \
-            --file reports/performance-report-${{ matrix.site }}.html \
-            --partner ${{ matrix.site }}
