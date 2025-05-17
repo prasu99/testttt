@@ -2,15 +2,21 @@ import { test } from '@playwright/test';
 import fs from 'fs';
 import path from 'path';
 
+// Get site code from environment or default to 'USAT'
+const site = process.env.SITE || 'USAT';
+
 test.setTimeout(1200000); // 20 minutes
 
-const screenshotsDir = './screenshots';
-const reportsDir = './reports';
-const performanceCsvPath = path.join(reportsDir, 'performance-metrics.csv');
+// Directories and CSV file path specific to site
+const screenshotsDir = path.join('./screenshots', site);
+const reportsDir = path.join('./reports', site);
+const performanceCsvPath = path.join(reportsDir, `performance-metrics-${site}.csv`);
 
-if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
-if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir);
+// Ensure directories exist
+if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir, { recursive: true });
+if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
 
+// Define pages to test
 const pages = [
   {
     title: 'Blueprint Home',
@@ -33,19 +39,19 @@ const pages = [
     h1: 'Best life insurance Companies'
   }
 ];
+
 async function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Write CSV header
+// Write CSV header (overwrite on each run)
 fs.writeFileSync(performanceCsvPath, 'Page,URL,LoadTime(ms),TopSlowResources\n');
 
-test('Delayed audit of USA TODAY Blueprint pages with performance CSV', async ({ page }) => {
+test(`Delayed audit of ${site} pages with performance CSV`, async ({ page }) => {
   for (let i = 0; i < pages.length; i++) {
     const { url, title } = pages[i];
     const screenshotPath = path.join(screenshotsDir, `${title.toLowerCase().replace(/ /g, '-')}.png`);
     const resources: { url: string; duration: number }[] = [];
-
     const requestTimings = new Map<string, number>();
 
     page.on('request', request => {
@@ -64,7 +70,6 @@ test('Delayed audit of USA TODAY Blueprint pages with performance CSV', async ({
     });
 
     try {
-      const startTime = Date.now();
       await page.goto(url, { waitUntil: 'load' });
 
       const loadTime = await page.evaluate(() => {
