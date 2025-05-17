@@ -6,10 +6,12 @@ test.setTimeout(900000); // 15 minutes
 
 const screenshotsDir = './screenshots';
 const reportsDir = './reports';
-const performanceCsvPath = path.join(reportsDir, 'performance-metrics.csv');
 
 if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
 if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir);
+
+const performanceCsvPath = path.join(reportsDir, 'performance-metrics-au.csv');
+const performanceJsonPath = path.join(reportsDir, 'performance-summary-au.json');
 
 const pages = [
   {
@@ -17,11 +19,7 @@ const pages = [
     url: 'https://www.forbes.com/advisor/au/',
     h1: 'Smart Financial Decisions Made Simple'
   },
-  {
-    title: 'Investing',
-    url: 'https://www.forbes.com/advisor/au/investing/',
-    h1: 'Investing in Australia'
-  }
+  // Add other pages here ...
 ];
 
 async function delay(ms: number) {
@@ -30,6 +28,8 @@ async function delay(ms: number) {
 
 // Write CSV header
 fs.writeFileSync(performanceCsvPath, 'Page,URL,LoadTime(ms),TopSlowResources\n');
+
+const performanceSummary: any[] = [];
 
 test('Delayed audit of Forbes AU pages with performance CSV', async ({ page }) => {
   for (let i = 0; i < pages.length; i++) {
@@ -68,11 +68,21 @@ test('Delayed audit of Forbes AU pages with performance CSV', async ({ page }) =
 
       const topResources = resources
         .sort((a, b) => b.duration - a.duration)
-        .slice(0, 5)
+        .slice(0, 5);
+
+      const topResourcesString = topResources
         .map(r => `${r.url} (${r.duration}ms)`)
         .join('; ');
 
-      fs.appendFileSync(performanceCsvPath, `"${title}","${url}",${loadTime},"${topResources}"\n`);
+      fs.appendFileSync(performanceCsvPath, `"${title}","${url}",${loadTime},"${topResourcesString}"\n`);
+
+      performanceSummary.push({
+        title,
+        url,
+        loadTime,
+        topResources,
+        screenshot: path.relative('.', screenshotPath) // relative path for HTML use
+      });
 
       console.log(`✅ ${title} load time: ${loadTime} ms`);
     } catch (err) {
@@ -84,4 +94,7 @@ test('Delayed audit of Forbes AU pages with performance CSV', async ({ page }) =
       await delay(60000);
     }
   }
+
+  // Write JSON summary for HTML report
+  fs.writeFileSync(performanceJsonPath, JSON.stringify(performanceSummary, null, 2));
 });
