@@ -27,22 +27,13 @@ jobs:
       - name: Run site-specific Playwright tests
         run: |
           SITE=${{ matrix.site }}
-          FILE_NAME=$(echo "$SITE" | tr '[:upper:]' '[:lower:]')
           mkdir -p reports/$SITE
-
-          TEST_FILE="sites/${SITE}.spec.ts"
-          echo "Running test file: $TEST_FILE"
-
-          if npx playwright test "$TEST_FILE" --reporter=html --output=reports/$SITE; then
-            echo "${SITE} ✅ Site check passed" > reports/$SITE/combined-status.txt
-          else
-            echo "${SITE} ❌ Site check failed" > reports/$SITE/combined-status.txt
-          fi
+          npx playwright test sites/${SITE}.spec.ts
 
       - name: Generate HTML performance report
         run: SITE=${{ matrix.site }} node generateHtmlReport.js
 
-      - name: Upload screenshots and performance CSV
+      - name: Upload artifacts (screenshots, CSV, HTML)
         uses: actions/upload-artifact@v4
         with:
           name: report-${{ matrix.site }}
@@ -51,8 +42,21 @@ jobs:
             reports/performance-metrics-${{ matrix.site }}.csv
             reports/performance-report-${{ matrix.site }}.html
 
-      - name: Upload site status file
-        uses: actions/upload-artifact@v4
+      - name: Setup Python 
+        uses: actions/setup-python@v4
         with:
-          name: status-${{ matrix.site }}
-          path: reports/${{ matrix.site }}/combined-status.txt
+          python-version: '3.x'
+
+      - name: Install Python dependencies
+        run: pip install requests
+
+      - name: Upload HTML report to SharePoint via Graph API
+        env:
+          TENANT_ID:     ${{ secrets.TENANT_ID }}
+          CLIENT_ID:     ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          SITE_ID:       ${{ secrets.SITE_ID }}
+        run: |
+          python3 upload_to_graph.py \
+            --file reports/performance-report-${{ matrix.site }}.html \
+            --partner ${{ matrix.site }}
