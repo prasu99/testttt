@@ -6,13 +6,15 @@ test.setTimeout(900000); // 15 minutes
 
 const screenshotsDir = './screenshots';
 const reportsDir = './reports';
-const performanceCsvPath = path.join(reportsDir, 'performance-metrics.csv');
 
-if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir, { recursive: true });
-if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
+if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
+if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir);
+
+const performanceCsvPath = path.join(reportsDir, 'performance-metrics-ca.csv');
+const performanceJsonPath = path.join(reportsDir, 'performance-summary-ca.json');
 
 const pages = [
-  {
+   {
     title: 'Forbes Advisor Canada – Helping You Make Smart Financial Decisions',
     url: 'https://www.forbes.com/advisor/ca/',
     h1: 'Smart Financial Decisions Made Simple'
@@ -33,13 +35,17 @@ async function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Write CSV header
 fs.writeFileSync(performanceCsvPath, 'Page,URL,LoadTime(ms),TopSlowResources\n');
+
+const performanceSummary: any[] = [];
 
 test('Delayed audit of Forbes CA pages with performance CSV', async ({ page }) => {
   for (let i = 0; i < pages.length; i++) {
     const { url, title } = pages[i];
     const screenshotPath = path.join(screenshotsDir, `${title.toLowerCase().replace(/ /g, '-')}.png`);
     const resources: { url: string; duration: number }[] = [];
+
     const requestTimings = new Map<string, number>();
 
     page.on('request', request => {
@@ -58,6 +64,7 @@ test('Delayed audit of Forbes CA pages with performance CSV', async ({ page }) =
     });
 
     try {
+      const startTime = Date.now();
       await page.goto(url, { waitUntil: 'load' });
 
       const loadTime = await page.evaluate(() => {
@@ -70,11 +77,22 @@ test('Delayed audit of Forbes CA pages with performance CSV', async ({ page }) =
 
       const topResources = resources
         .sort((a, b) => b.duration - a.duration)
-        .slice(0, 5)
+        .slice(0, 5);
+
+      const topResourcesString = topResources
         .map(r => `${r.url} (${r.duration}ms)`)
         .join('; ');
 
-      fs.appendFileSync(performanceCsvPath, `"${title}","${url}",${loadTime},"${topResources}"\n`);
+      fs.appendFileSync(performanceCsvPath, `"${title}","${url}",${loadTime},"${topResourcesString}"\n`);
+
+      performanceSummary.push({
+        title,
+        url,
+        loadTime,
+        topResources,
+        screenshot: path.relative('.', screenshotPath) // relative path for HTML use
+      });
+
       console.log(`✅ ${title} load time: ${loadTime} ms`);
     } catch (err) {
       console.error(`❌ Error visiting ${title}:`, err);
@@ -85,4 +103,7 @@ test('Delayed audit of Forbes CA pages with performance CSV', async ({ page }) =
       await delay(60000);
     }
   }
+
+  // Write JSON summary for HTML report
+  fs.writeFileSync(performanceJsonPath, JSON.stringify(performanceSummary, null, 2));
 });
