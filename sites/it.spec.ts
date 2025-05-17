@@ -4,18 +4,17 @@ import path from 'path';
 
 test.setTimeout(900000); // 15 minutes
 
-const site = 'IT';  // Hardcode or you can still get from env if you want: process.env.SITE || 'IT'
-const screenshotsDir = `./screenshots/${site}`;
-const reportsDir = `./reports/${site}`;
-const performanceCsvPath = path.join(reportsDir, `performance-metrics-${site}.csv`);
+const screenshotsDir = './screenshots';
+const reportsDir = './reports';
 
-// Ensure directories exist
-if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir, { recursive: true });
-if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir, { recursive: true });
+if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
+if (!fs.existsSync(reportsDir)) fs.mkdirSync(reportsDir);
 
-// Pages to test for IT site
+const performanceCsvPath = path.join(reportsDir, 'performance-metrics-it.csv');
+const performanceJsonPath = path.join(reportsDir, 'performance-summary-it.json');
+
 const pages = [
-  {
+   {
     title: 'Home',
     url: 'https://www.forbes.com/advisor/it/',
     h1: 'Scelte finanziarie intelligenti in tutta semplicità'
@@ -25,7 +24,6 @@ const pages = [
     url: 'https://www.forbes.com/advisor/it/investire/',
     h1: 'Investire soldi'
   }
-  // Add more pages here as needed
 ];
 
 async function delay(ms: number) {
@@ -35,11 +33,14 @@ async function delay(ms: number) {
 // Write CSV header
 fs.writeFileSync(performanceCsvPath, 'Page,URL,LoadTime(ms),TopSlowResources\n');
 
-test('Performance audit for Forbes IT', async ({ page }) => {
+const performanceSummary: any[] = [];
+
+test('Delayed audit of Forbes IT pages with performance CSV', async ({ page }) => {
   for (let i = 0; i < pages.length; i++) {
     const { url, title } = pages[i];
     const screenshotPath = path.join(screenshotsDir, `${title.toLowerCase().replace(/ /g, '-')}.png`);
     const resources: { url: string; duration: number }[] = [];
+
     const requestTimings = new Map<string, number>();
 
     page.on('request', request => {
@@ -58,6 +59,7 @@ test('Performance audit for Forbes IT', async ({ page }) => {
     });
 
     try {
+      const startTime = Date.now();
       await page.goto(url, { waitUntil: 'load' });
 
       const loadTime = await page.evaluate(() => {
@@ -70,11 +72,22 @@ test('Performance audit for Forbes IT', async ({ page }) => {
 
       const topResources = resources
         .sort((a, b) => b.duration - a.duration)
-        .slice(0, 5)
+        .slice(0, 5);
+
+      const topResourcesString = topResources
         .map(r => `${r.url} (${r.duration}ms)`)
         .join('; ');
 
-      fs.appendFileSync(performanceCsvPath, `"${title}","${url}",${loadTime},"${topResources}"\n`);
+      fs.appendFileSync(performanceCsvPath, `"${title}","${url}",${loadTime},"${topResourcesString}"\n`);
+
+      performanceSummary.push({
+        title,
+        url,
+        loadTime,
+        topResources,
+        screenshot: path.relative('.', screenshotPath) // relative path for HTML use
+      });
+
       console.log(`✅ ${title} load time: ${loadTime} ms`);
     } catch (err) {
       console.error(`❌ Error visiting ${title}:`, err);
@@ -85,4 +98,7 @@ test('Performance audit for Forbes IT', async ({ page }) => {
       await delay(60000);
     }
   }
+
+  // Write JSON summary for HTML report
+  fs.writeFileSync(performanceJsonPath, JSON.stringify(performanceSummary, null, 2));
 });
