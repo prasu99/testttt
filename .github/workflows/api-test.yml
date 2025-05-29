@@ -2,8 +2,8 @@ name: API Monitoring Test
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Runs every hour; adjust as needed
-  workflow_dispatch:     # Allows manual triggering
+    - cron: '0 * * * *'  # Every hour
+  workflow_dispatch:     # Manual trigger
 
 jobs:
   run-playwright-test:
@@ -21,11 +21,13 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
       - name: Create .env from GitHub secrets
         run: |
-           echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env
-           echo "REALVALIDATION_TOKEN=${{ secrets.REALVALIDATION_TOKEN }}" >> .env
-
+          echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env
+          echo "REALVALIDATION_TOKEN=${{ secrets.REALVALIDATION_TOKEN }}" >> .env
 
       - name: Run Playwright API Monitoring Test
         run: npx playwright test
