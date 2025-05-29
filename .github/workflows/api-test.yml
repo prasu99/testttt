@@ -22,7 +22,7 @@ jobs:
         run: npm install
 
       - name: Set up environment variables
-        run: echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env && \
+        run: echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env &&
              echo "REALVALIDATION_TOKEN=${{ secrets.REALVALIDATION_TOKEN }}" >> .env
 
       - name: Run Playwright API Monitoring Test
