@@ -1,0 +1,29 @@
+name: API Monitoring Test
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Runs every hour; adjust as needed
+  workflow_dispatch:     # Allows manual triggering
+
+jobs:
+  run-playwright-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Set up environment variables
+        run: echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env && \
+             echo "REALVALIDATION_TOKEN=${{ secrets.REALVALIDATION_TOKEN }}" >> .env
+
+      - name: Run Playwright API Monitoring Test
+        run: npx playwright test
